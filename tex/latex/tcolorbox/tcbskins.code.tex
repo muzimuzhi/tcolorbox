@@ -20,6 +20,7 @@
 \tcb@set@library@version{5.1.1}
 
 \RequirePackage{tikz}[2010/10/13]
+\usetikzlibrary{filling}
 
 \newenvironment{tikzpicture@tcb@hooked}{%
   \edef\tcb@tikzpicture@begin{\noexpand\tikzpicture[\expandonce\tcb@tikz@option@hook]}%
@@ -1209,37 +1210,6 @@
     boxed title style={reduce@vertical@rules,#1}},
 }
 
-
-\newbox\tcb@waterbox
-
-\def\tcb@setratio#1#2#3{\edef#1{\strip@pt\dimexpr\number\numexpr\number\dimexpr#2\relax*65536/\number\dimexpr#3\relax\relax sp\relax}}
-
-\def\tcb@setratiorobust#1#2#3{\ifdim\dimexpr#3<1pt\relax\tcb@setratio#1{#2}{1pt}\else\tcb@setratio#1{#2}{#3}\fi}
-
-\def\tcb@comp@waterbox@stretch#1#2#3{%
-  \tcb@setratiorobust\tcb@scale@x{#1\dimexpr#2}{\wd\tcb@waterbox}%
-  \tcb@setratiorobust\tcb@scale@y{#1\dimexpr#3}{\ht\tcb@waterbox+\dp\tcb@waterbox}%
-}
-
-\def\tcb@comp@waterbox@zoom#1#2#3{%
-  \tcb@comp@waterbox@stretch{#1}{#2}{#3}%
-  \ifdim\dimexpr\tcb@scale@x pt\relax<\dimexpr\tcb@scale@y pt\relax\let\tcb@scale@y=\tcb@scale@x\else\let\tcb@scale@x=\tcb@scale@y\fi%
-}
-
-\def\tcb@comp@waterbox@overzoom#1#2#3{%
-  \tcb@comp@waterbox@stretch{#1}{#2}{#3}%
-  \ifdim\dimexpr\tcb@scale@x pt\relax>\dimexpr\tcb@scale@y pt\relax\let\tcb@scale@y=\tcb@scale@x\else\let\tcb@scale@x=\tcb@scale@y\fi%
-}
-
-\def\tcb@comp@waterbox@shrink#1#2#3{%
-  \tcb@comp@waterbox@zoom{#1}{#2}{#3}%
-  \ifdim\dimexpr\tcb@scale@x pt\relax>1pt\relax%
-    \edef\tcb@scale@x{1}\edef\tcb@scale@y{1}%
-  \fi%
-}
-
-\def\tcb@box@scaled@waterbox{\scalebox{\tcb@scale@x}[\tcb@scale@y]{\box\tcb@waterbox}}
-
 \def\tcb@drawspec@watermark@@noclip{%
   \tcb@comp@wm%
   \node[opacity=\kvtcb@watermark@opacity,anchor=center] at (interior) {\tcb@box@scaled@waterbox};%
@@ -1310,115 +1280,6 @@
   \end{tcbclipinterior}%
 }
 
-
-\def\tcb@process@ppbb{%
-  \pgf@process{\pgfpointanchor{path picture bounding box}{south west}}%
-  \pgf@xa\pgf@x\pgf@ya\pgf@y%
-  \pgf@process{\pgfpointanchor{path picture bounding box}{north east}}%
-  \pgf@xb\pgf@x\pgf@yb\pgf@y%
-  \pgfsetfillopacity{\tcb@tikz@fill@graphics@opacity}%
-  \pgfsetstrokeopacity{\tcb@tikz@fill@graphics@opacity}%
-}
-
-\def\tcb@process@ppbb@wh{%
-  \tcb@process@ppbb%
-  \tcbdimto\tcb@ppbb@width{\pgf@xb-\pgf@xa}%
-  \tcbdimto\tcb@ppbb@height{\pgf@yb-\pgf@ya}%
-}
-
-\def\tcb@ppbb@textbox#1{\pgftext[x=\the\dimexpr\pgf@xa+\tcb@ppbb@width/2\relax,y=\pgf@ya+\tcb@ppbb@height/2]{#1}}
-
-\def\tcb@set@waterbox@to@graphics#1{%
-  \setbox\tcb@waterbox=\color@hbox\pgfinterruptpicture%
-    \begingroup\edef\x{\endgroup\noexpand\includegraphics[\tcb@tikz@fill@graphics@options]}\x{#1}%
-    \endpgfinterruptpicture\color@endbox%
-}
-
-\def\tcb@set@waterbox@to@picture#1{%
-  \setbox\tcb@waterbox=\color@hbox\pgfinterruptpicture{\pgfsetbaseline{0pt}\begin{tikzpicture}#1\end{tikzpicture}}\endpgfinterruptpicture\color@endbox%
-}
-
-\tikzset{%
-  fill image opacity/.store in=\tcb@tikz@fill@graphics@opacity,%
-  fill image opacity=1,%
-  fill image scale/.store in=\tcb@tikz@fill@graphics@scale,%
-  fill image scale=1,%
-  fill image options/.store in=\tcb@tikz@fill@graphics@options,%
-  fill image options=,%
-  fill plain image/.style={path picture={%
-    \tcb@process@ppbb@wh%
-    \tcb@ppbb@textbox{\begingroup\edef\x{\endgroup\noexpand\includegraphics[\tcb@tikz@fill@graphics@options]}\x{#1}}%
-  }},
-  fill plain picture/.style={path picture={%
-    \tcb@process@ppbb@wh%
-    \tcb@set@waterbox@to@picture{#1}%
-    \tcb@ppbb@textbox{\box\tcb@waterbox}%
-  }},
-  fill stretch image/.style={path picture={%
-    \tcb@process@ppbb@wh%
-    \tcb@ppbb@textbox{\begingroup\edef\x{\endgroup\noexpand\includegraphics[\tcb@tikz@fill@graphics@options,%
-      width=\the\dimexpr\tcb@tikz@fill@graphics@scale\dimexpr\tcb@ppbb@width\relax,%
-      height=\the\dimexpr\tcb@tikz@fill@graphics@scale\dimexpr\tcb@ppbb@height\relax]}\x{#1}}%
-  }},
-  fill stretch picture/.style={path picture={%
-    \tcb@process@ppbb@wh%
-    \tcb@set@waterbox@to@picture{#1}%
-    \tcb@comp@waterbox@stretch{\tcb@tikz@fill@graphics@scale}{\tcb@ppbb@width}{\tcb@ppbb@height}%
-    \tcb@ppbb@textbox{\tcb@box@scaled@waterbox}%
-  }},
-  fill@overzoom/.style={path picture={%
-    \tcb@process@ppbb@wh%
-    #1%
-    \tcb@comp@waterbox@overzoom{\tcb@tikz@fill@graphics@scale}{\tcb@ppbb@width}{\tcb@ppbb@height}%
-    \tcb@ppbb@textbox{\tcb@box@scaled@waterbox}%
-  }},
-  fill overzoom image/.style={fill@overzoom={\tcb@set@waterbox@to@graphics{#1}}},%
-  fill overzoom picture/.style={fill@overzoom={\tcb@set@waterbox@to@picture{#1}}},%
-  fill@zoom/.style={path picture={%
-    \tcb@process@ppbb@wh%
-    #1%
-    \tcb@comp@waterbox@zoom{\tcb@tikz@fill@graphics@scale}{\tcb@ppbb@width}{\tcb@ppbb@height}%
-    \tcb@ppbb@textbox{\tcb@box@scaled@waterbox}%
-  }},
-  fill zoom image/.style={fill@zoom={\tcb@set@waterbox@to@graphics{#1}}},%
-  fill zoom picture/.style={fill@zoom={\tcb@set@waterbox@to@picture{#1}}},%
-  fill@shrink/.style={path picture={%
-    \tcb@process@ppbb@wh%
-    #1%
-    \tcb@comp@waterbox@shrink{\tcb@tikz@fill@graphics@scale}{\tcb@ppbb@width}{\tcb@ppbb@height}%
-    \tcb@ppbb@textbox{\tcb@box@scaled@waterbox}%
-  }},
-  fill shrink image/.style={fill@shrink={\tcb@set@waterbox@to@graphics{#1}}},%
-  fill shrink picture/.style={fill@shrink={\tcb@set@waterbox@to@picture{#1}}},%
-  fill@tile/.style={path picture={%
-    \tcb@process@ppbb%
-    #1%
-    \tcbdimto\tcb@ppbb@tilew{\wd\tcb@waterbox}%
-    \tcbdimto\tcb@ppbb@tileh{\ht\tcb@waterbox+\dp\tcb@waterbox}%
-    \pgf@xc\pgf@xa\pgf@yc\pgf@yb%
-    \pgfutil@loop%
-      \pgfutil@loop%
-        \pgftext[x=\pgf@xc,y=\pgf@yc,left,top]{\copy\tcb@waterbox}%
-        \ifdim\pgf@xc<\pgf@xb\relax%
-        \advance\pgf@xc\tcb@ppbb@tilew%
-      \pgfutil@repeat%
-      \ifdim\pgf@yc>\pgf@ya\relax%
-      \advance\pgf@yc-\tcb@ppbb@tileh%
-      \pgf@xc\pgf@xa%
-    \pgfutil@repeat%
-  }},%
-  fill tile image/.style={fill@tile={\tcb@set@waterbox@to@graphics{#1}}},%
-  fill tile picture/.style={fill@tile={\tcb@set@waterbox@to@picture{#1}}},%
-  fill tile picture*/.style 2 args={fill@tile={\tcb@set@waterbox@to@picture{#2}%
-    \setbox\tcb@waterbox=\color@hbox\scalebox{#1}{\box\tcb@waterbox}\color@endbox}},%
-  %
-  fill plain image*/.style 2 args={fill image options={#1},fill plain image={#2}},%
-  fill stretch image*/.style 2 args={fill image options={#1},fill stretch image={#2}},%
-  fill overzoom image*/.style 2 args={fill image options={#1},fill overzoom image={#2}},%
-  fill zoom image*/.style 2 args={fill image options={#1},fill zoom image={#2}},%
-  fill shrink image*/.style 2 args={fill image options={#1},fill shrink image={#2}},%
-  fill tile image*/.style 2 args={fill image options={#1},fill tile image={#2}},%
-}
 
 \tcbset{%
   frame style image/.style={frame style={fill=none,fill stretch image={#1}}},
