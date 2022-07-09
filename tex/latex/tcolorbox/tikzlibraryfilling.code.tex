@@ -69,7 +69,7 @@
 }
 
 \def\tcb@set@waterbox@to@picture#1{%
-  \setbox\tcb@waterbox=\color@hbox\pgfinterruptpicture{\pgfsetbaseline{0pt}\begin{tikzpicture}#1\end{tikzpicture}}\endpgfinterruptpicture\color@endbox%
+  \setbox\tcb@waterbox=\color@hbox\pgfinterruptpicture{\pgfsetbaseline{0pt}\tikzpicture#1\endtikzpicture}\endpgfinterruptpicture\color@endbox%
 }
 
 \tikzset{%
