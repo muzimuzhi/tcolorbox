@@ -22,17 +22,18 @@
 \RequirePackage{pdftexcmds}
 \RequirePackage{shellesc}
 
-\ifdefined\pdf@filemdfivesum\else% XeLaTeX presumed ...
-  \def\pdf@filemdfivesum#1{\mdfivesum file {#1}}%
-\fi
 \ifdefined\pdf@filemoddate\else% very poor XeLaTeX bypassing
   \def\pdf@filemoddate#1{}%
 \fi
 
-\def\tcbproc@readmdfive#1#2{%
-  \edef\tcbprocmdfivesum{\pdf@filemdfivesum{#1}}%
-  \IfFileExists{#2}{\input{#2}}{\def\tcbproclastmdfivesum{}}%
-}
+\ExplSyntaxOn
+\cs_new_protected:Npn \tcbproc@readmdfive #1#2
+  {
+    \tl_set:Ne \tcbproclastmdfivesum { \file_mdfive_hash:n {#1} }
+    \file_if_exist_input:nF {#2}
+      { \tl_set_eq:NN \tcbproclastmdfivesum \c_empty_tl }
+  }
+\ExplSyntaxOff
 
 \def\tcbproc@writemdfive#1{%
   \tcb@allocate@tcb@out%
