@@ -21,13 +21,6 @@
 
 \tcbuselibrary{pro@cessing}
 
-{
-\catcode`\"=12
-\xdef\tcbexternal@normal@dq{"}
-\catcode`\"=13
-\gdef\tcbexternal@activate@normal@dq{\let"=\tcbexternal@normal@dq}
-}
-
 \long\def\tcbifexternal#1#2{%
   \ifdefined\TCBEXTERNALINPUT%
     #1%
@@ -65,31 +58,45 @@
   \edef\tcbexternal@job@pdf{\expandonce{\tcbexternal@job@name.pdf}}%
 }
 
-\def\tcbexternal@corecompile{%
-  \begingroup%
-  \ifnum\the\catcode`\"=13 \tcbexternal@activate@normal@dq\fi%
-  \message{=== Compile external '\tcbexternal@job@name': }%
-  \tcb@allocate@tcb@out%
-  \immediate\openout\tcb@out="\tcbexternal@run@tex"
-  \immediate\write\tcb@out{\string\gdef\string\TCBEXTERNALINPUT{"\tcbexternal@job@source"}}%
-  \immediate\write\tcb@out{\string\gdef\string\TCBEXTERNALSAFETY{\tcbexternal@safety}}%
-  \immediate\write\tcb@out{\string\gdef\string\TCBEXTERNALPREAMBLE{\expandonce{\tcbexternal@preamble}}}%
-  \ifdefempty{\tcbexternal@preclass}{}{\immediate\write\tcb@out{\expandonce{\tcbexternal@preclass}}}%
-  \immediate\write\tcb@out{\string\input{"\jobname.tex"}}%
-  \immediate\closeout\tcb@out%
-  \foreach \n in {1,...,\tcbexternal@runs}
-  {%
-    \UseName{sys_shell:now:e}{%
-      \tcbexternal@compiler\space
-      -shell-escape
-      -halt-on-error
-      -interaction=batchmode
-      -jobname="\tcbexternal@job@name"
-      "\tcbexternal@run@tex"
-    }%
-  }%
-  \endgroup%
-}
+\ExplSyntaxOn
+\cs_new_protected:Npn \tcbexternal@corecompile
+  {
+    \group_begin:
+    \char_set_catcode_other:n { `\" }
+    \iow_term:e { ===~Compile~external~'\tcbexternal@job@name':~ }
+    \tcb@allocate@tcb@out
+    \iow_open:No \tcb@out { \tcbexternal@run@tex }
+    \iow_now:Ne \tcb@out
+      {
+        \token_to_str:N \gdef \token_to_str:N \TCBEXTERNALINPUT
+          { "\tcbexternal@job@source" } \iow_newline:
+        \token_to_str:N \gdef \token_to_str:N \TCBEXTERNALSAFETY
+          { \tcbexternal@safety } \iow_newline:
+        \token_to_str:N \gdef \token_to_str:N \TCBEXTERNALPREAMBLE
+          { \exp_not:o {\tcbexternal@preamble} }
+      }
+    \tl_if_empty:NF \tcbexternal@preclass
+      { \iow_now:No \tcb@out { \tcbexternal@preclass } }
+    \iow_now:No \tcb@out
+        { \token_to_str:N \input{"\jobname.tex"} }
+    \iow_close:N \tcb@out
+    \int_step_inline:nn { \tcbexternal@runs }
+      {
+        \sys_shell_now:e
+          {
+            \tcbexternal@compiler~
+            -shell-escape~
+            -halt-on-error~
+            -interaction=batchmode~
+            -jobname="\tcbexternal@job@name"~
+            "\tcbexternal@run@tex"
+          }
+      }
+    \group_end:
+  }
+
+\cs_generate_variant:Nn \iow_now:Nn { No }
+\ExplSyntaxOff
 
 \def\tcbexternal@compile#1{%
   \tcbiffileprocess{#1}%
