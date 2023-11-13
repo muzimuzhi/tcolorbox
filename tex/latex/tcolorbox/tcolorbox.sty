@@ -2688,36 +2688,42 @@
 
 % recording
 
-\def\tcb@allocate@tcb@record@out{%
-  \newwrite\tcb@record@out%
-  \xdef\tcb@allocate@tcb@record@out{}%
-}
+\ExplSyntaxOn
+\iow_new:N \g__tcb_record_iow
 
+\cs_new_protected:Npn \__tcb_record:n #1
+  { \iow_now:Ne \g__tcb_record_iow {#1} }
 
-\def\tcb@null#1{}
-\newcommand{\tcb@record}[1]{\immediate\write\tcb@record@out{#1}}
+\NewDocumentCommand \tcbstartrecording { O{\jobname.records} }
+  {
+    \cs_set_eq:NN \tcbrecord \__tcb_record:n
+    % or str?
+    \tl_set:Ne \l__tcb_record_file_tl {#1}
+    \iow_open:Nn \g__tcb_record_iow {\l__tcb_record_file_tl}
+  }
 
-\newcommand{\tcbstartrecording}[1][\jobname.records]{%
-  \let\tcbrecord\tcb@record%
-  \edef\tcb@record@file{#1}%
-  \tcb@allocate@tcb@record@out%
-  \immediate\openout\tcb@record@out\tcb@record@file%
-}
+\NewDocumentCommand \tcbstoprecording { }
+  {
+    \iow_close:N \g__tcb_record_iow
+    \cs_set_eq:NN \tcbrecord \use_none:n
+  }
 
-\newcommand{\tcbstoprecording}{%
-  \immediate\closeout\tcb@record@out%
-  \let\tcbrecord\tcb@null%
-}
-
-\tcbset{%
+\tcbset{
   record/.style={phantom={\tcbrecord{#1}}},
-  no recording/.code={\let\tcbrecord\tcb@null},
-  no recording
+  no~recording/.code={ \cs_set_eq:NN \tcbrecord \use_none:n },
+  no~recording
 }
 
-\newcommand{\tcbinputrecords}[1][\tcb@record@file]{%
-  \IfFileExists{#1}{\input{#1}}{\tcb@error{record file `#1' not found}{The record file `#1' was not found}}%
-}
+\NewDocumentCommand \tcbinputrecords { O{\l__tcb_record_file_tl} }
+  {
+    \file_if_exist_input:nF {#1}
+      {
+        \tcb@error{record~file~`#1'~not~found}
+          {The~record~file~`#1'~was~not~found}
+      }
+  }
+
+\ExplSyntaxOff
 
 \tcb@new@skin{standard}{frame engine=standard,interior titled engine=standard,
   interior engine=standard,segmentation engine=standard,title engine=standard,
