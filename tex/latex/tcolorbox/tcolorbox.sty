@@ -2568,15 +2568,22 @@
 
 % verbatim output as in 'verbatim'
 
+% Once a stream is declared by \iow_new:N, it can never be used by \openout
+% (error "! Bad number (16)." will be thrown).
+% This is because expl3 uses a pool of streams thus an iow stream is
+% initialized to \c_term_iow (16), and only allocated to a non-terminal
+% stream number when it's opened by \iow_open:Nn.
 \ExplSyntaxOn
 \cs_new_protected:Npn \tcb@allocate@tcb@out
   {
-    % TODO: more latex3-nic name is \g_tcb_out_iow
-    % FIXME: why \iow_new:N caused "! Bad number (16)" error?
-    \newwrite \tcb@out
-    % FIXME: must be global? before \xdef\xxx{} was used
+    \iow_new:N \g_tcb_out_iow
     \cs_gset_eq:NN \tcb@allocate@tcb@out \prg_do_nothing:
   }
+
+% wrappers to be used in non-expl3 context
+\cs_new_protected:Npn \tcb@iow@open  { \iow_open:Nn \g_tcb_out_iow }
+\cs_new_protected:Npn \tcb@iow@write { \iow_now:Ne  \g_tcb_out_iow }
+\cs_new_protected:Npn \tcb@iow@close { \iow_close:N \g_tcb_out_iow }
 \ExplSyntaxOff
 
 \let\tcb@verbatim@begin@hook\@empty
@@ -2588,19 +2595,18 @@
   \@bsphack
   \tcb@set@verbatim@finish%
   \tcb@allocate@tcb@out%
-  \immediate\openout\tcb@out #1
+  \tcb@iow@open{#1}%
   \tcb@verbatim@begin@hook%
   \let\do\@makeother\dospecials
   \tcb@verbatim@change@percent\catcode`\^^M\active \catcode`\^^I=12
   \def\verbatim@processline{%
-    \immediate\write\tcb@out
-      {\the\verbatim@line}}%
+    \tcb@iow@write{\the\verbatim@line}}%
   \verbatim@start}%'
 
 
 \def\endtcbverbatimwrite{%
   \tcb@verbatim@end@hook%
-  \immediate\closeout\tcb@out
+  \tcb@iow@close
   \@esphack%
 }
 

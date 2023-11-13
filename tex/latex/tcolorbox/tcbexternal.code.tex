@@ -65,8 +65,8 @@
     \char_set_catcode_other:n { `\" }
     \iow_term:e { ===~Compile~external~'\tcbexternal@job@name':~ }
     \tcb@allocate@tcb@out
-    \iow_open:Nn \tcb@out { \tcbexternal@run@tex }
-    \iow_now:Ne \tcb@out
+    \iow_open:Nn \g_tcb_out_iow { \tcbexternal@run@tex }
+    \iow_now:Ne \g_tcb_out_iow
       {
         \token_to_str:N \gdef \token_to_str:N \TCBEXTERNALINPUT
           { "\tcbexternal@job@source" } \iow_newline:
@@ -76,10 +76,10 @@
           { \exp_not:o {\tcbexternal@preamble} }
       }
     \tl_if_empty:NF \tcbexternal@preclass
-      { \iow_now:No \tcb@out { \tcbexternal@preclass } }
-    \iow_now:No \tcb@out
+      { \iow_now:No \g_tcb_out_iow { \tcbexternal@preclass } }
+    \iow_now:Ne \g_tcb_out_iow
         { \token_to_str:N \input {"\jobname.tex"} }
-    \iow_close:N \tcb@out
+    \iow_close:N \g_tcb_out_iow
     \int_step_inline:nn { \tcbexternal@runs }
       {
         \sys_shell_now:e
@@ -246,22 +246,22 @@
     \let\tcbexternal@out@end=\@empty%
   },
   minipage/.code={%
-    \appto\tcbexternal@out@begin{\immediate\write\tcb@out{\string\begin{minipage}{\the\dimexpr#1\relax}\string\ignorespaces\@percentchar}}%
-    \preto\tcbexternal@out@end{\immediate\write\tcb@out{\string\end{minipage}\@percentchar}}%
+    \appto\tcbexternal@out@begin{\tcb@iow@write{\string\begin{minipage}{\the\dimexpr#1\relax}\string\ignorespaces\@percentchar}}%
+    \preto\tcbexternal@out@end{\tcb@iow@write{\string\end{minipage}\@percentchar}}%
   },
   minipage/.default=\linewidth,
   %
   environment with percent/.is choice,
   environment with percent/true/.style={%
     /tcb/external/environment/.code={%
-      \appto\tcbexternal@out@begin{\immediate\write\tcb@out{\string\begin{##1}\@percentchar}}%
-      \preto\tcbexternal@out@end{\immediate\write\tcb@out{\string\end{##1}\@percentchar}}%
+      \appto\tcbexternal@out@begin{\tcb@iow@write{\string\begin{##1}\@percentchar}}%
+      \preto\tcbexternal@out@end{\tcb@iow@write{\string\end{##1}\@percentchar}}%
     }
   },
   environment with percent/false/.style={%
     /tcb/external/environment/.code={%
-      \appto\tcbexternal@out@begin{\immediate\write\tcb@out{\string\begin{##1}}}%
-      \preto\tcbexternal@out@end{\immediate\write\tcb@out{\string\end{##1}}}%
+      \appto\tcbexternal@out@begin{\tcb@iow@write{\string\begin{##1}}}%
+      \preto\tcbexternal@out@end{\tcb@iow@write{\string\end{##1}}}%
     }
   },
   environment with percent/.default=true,

@@ -31,18 +31,18 @@
   }
 
 \cs_new_protected:Npn \__tcbproc_write_mdfive:nn #1
-{
-  \tcb@allocate@tcb@out
-  \iow_open:Nn \tcb@out {#1}
-  \iow_now:Ne \tcb@out
-    {
-      \token_to_str:N \ExplSyntaxOn
-      \token_to_str:N \def \token_to_str:N \l__tcb_proc_last_hash_str
-        { \l__tcb_proc_curr_hash_str }
-      \token_to_str:N \ExplSyntaxOff
-    }
-  \iow_close:N \tcb@out
-}
+  {
+    \tcb@allocate@tcb@out
+    \iow_open:Nn \g_tcb_out_iow {#1}
+    \iow_now:Ne \g_tcb_out_iow
+      {
+        \token_to_str:N \ExplSyntaxOn
+        \token_to_str:N \def \token_to_str:N \l__tcb_proc_last_hash_str
+          { \l__tcb_proc_curr_hash_str }
+        \token_to_str:N \ExplSyntaxOff
+      }
+    \iow_close:N \g_tcb_out_iow
+  }
 
 \cs_new_protected:Npn \__tcbif_process_on:nnnTF #1#2#3
   {
