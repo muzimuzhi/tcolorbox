@@ -39,6 +39,10 @@ and this project adheres to
 - Distinct `savelowerto`/`redirectlowerto` file names inside the documentation (issue #248)
 - Updated documentation and warnings for the interaction between `saveto`
     and `savelowerto` (issue #249)
+- Library `external`: package loading of `pdftexcmds` and `shellesc` removed.
+    expl3 functions are used as drop-in replacements.
+- Libraries `listings`, `listingsutf8`, and `minted`: package loading of `pdftexcmds`
+    and `shellesc` removed.
 
 ### Deprecated
 
