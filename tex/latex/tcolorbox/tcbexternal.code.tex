@@ -79,7 +79,7 @@
   \immediate\closeout\tcb@out%
   \foreach \n in {1,...,\tcbexternal@runs}
   {%
-    \ShellEscape{%
+    \UseName{sys_shell:now:e}{%
       \tcbexternal@compiler\space
       -shell-escape
       -halt-on-error
