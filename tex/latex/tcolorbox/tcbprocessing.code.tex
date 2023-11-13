@@ -22,10 +22,6 @@
 \RequirePackage{pdftexcmds}
 \RequirePackage{shellesc}
 
-\ifdefined\pdf@filemoddate\else% very poor XeLaTeX bypassing
-  \def\pdf@filemoddate#1{}%
-\fi
-
 \ExplSyntaxOn
 \cs_new_protected:Npn \tcbproc@readmdfive #1#2
   {
@@ -48,21 +44,28 @@
   \expandafter\@firstoftwo%
 }
 
-\newrobustcmd{\iftcb@process@conditional}[3]{%
-  \tcbproc@readmdfive{#1}{#2}%
-  \ifdefstrequal{\tcbproclastmdfivesum}{\tcbprocmdfivesum}{%
-    \IfFileExists{#3}{%
-      \ifnum\pdf@strcmp{\pdf@filemoddate{#2}}{\pdf@filemoddate{#3}}>0\relax%
-        \expandafter\@firstoftwo%
-      \else%
-        \expandafter\@secondoftwo%
-      \fi%
-    }{\expandafter\@firstoftwo}%
-  }{%
-    \tcbproc@writemdfive{#2}%
-    \expandafter\@firstoftwo%
-  }%
-}
+\ExplSyntaxOn
+% TODO: define it by \prg_new_protected_conditional:Npnn.
+%       Then csname must contain ":".
+\cs_new_protected:Npn \iftcb@process@conditional #1#2#3
+  {
+    \tcbproc@readmdfive {#1} {#2}
+    \str_if_eq:ooTF { \tcbproclastmdfivesum } { \tcbprocmdfivesum }
+      {
+        \file_if_exist:nTF {#3}
+          {
+            \str_if_eq:eeTF { \file_timestamp:n {#2} }{ \file_timestamp:n {#3} }
+              { \use_ii:ii }
+              { \use_i:ii }
+          }
+          { \use_i:nn }
+      }
+      {
+        \tcbproc@writemdfive{#2}
+        \use_i:nn
+      }
+  }
+\ExplSyntaxOff
 
 \newrobustcmd{\iftcb@process@off}[3]{%
   \tcbproc@readmdfive{#1}{#2}%
