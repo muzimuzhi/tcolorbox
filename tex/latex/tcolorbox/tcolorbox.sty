@@ -2568,10 +2568,14 @@
 
 % verbatim output as in 'verbatim'
 
-\def\tcb@allocate@tcb@out{%
-  \newwrite\tcb@out%
-  \xdef\tcb@allocate@tcb@out{}%
-}
+\ExplSyntaxOn
+\cs_new_protected:Npn \tcb@allocate@tcb@out
+  {
+    % more latex3-nic name is \g_tcb_out_iow
+    \iow_new:N \tcb@out
+    \cs_gclear:N \tcb@allocate@tcb@out
+  }
+\ExplSyntaxOff
 
 \let\tcb@verbatim@begin@hook\@empty
 \let\tcb@verbatim@end@hook\@empty

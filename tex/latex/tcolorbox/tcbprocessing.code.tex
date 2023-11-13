@@ -20,34 +20,40 @@
 \tcb@set@library@version{6.2.0pre2}
 
 \ExplSyntaxOn
+
 \cs_new_protected:Npn \tcbproc@readmdfive #1#2
   {
     \tl_set:Ne \tcbproclastmdfivesum { \file_mdfive_hash:n {#1} }
     \file_if_exist_input:nF {#2}
       { \tl_set_eq:NN \tcbproclastmdfivesum \c_empty_tl }
   }
-\ExplSyntaxOff
 
-\def\tcbproc@writemdfive#1{%
-  \tcb@allocate@tcb@out%
-  \immediate\openout\tcb@out=#1%
-  \immediate\write\tcb@out{\string\def\string\tcbproclastmdfivesum{\tcbprocmdfivesum}\@percentchar}%
-  \immediate\closeout\tcb@out%
+\cs_new_protected:Npn \tcbproc@writemdfive #1
+{
+  \tcb@allocate@tcb@out
+  \iow_open:Nn \tcb@out {#1}
+  \iow_now:Ne \tcb@out
+    {
+      \token_to_str:N \def \token_to_str:N \tcbproclastmdfivesum
+        { \tcbprocmdfivesum } \c_percent_str
+    }
+  \iow_close:N \tcb@out
 }
 
-\newrobustcmd{\iftcb@process@on}[3]{%
-  \tcbproc@readmdfive{#1}{#2}%
-  \ifdefstrequal{\tcbproclastmdfivesum}{\tcbprocmdfivesum}{}{\tcbproc@writemdfive{#2}}%
-  \expandafter\@firstoftwo%
-}
+\cs_new_protected:Npn \iftcb@process@on #1#2#3
+  {
+    \tcbproc@readmdfive {#1} {#2}
+    \str_if_eq:NNF \tcbproclastmdfivesum \tcbprocmdfivesum
+      { \tcbproc@writemdfive{#2} }
+    \use_i:ii
+  }
 
-\ExplSyntaxOn
 % TODO: define it by \prg_new_protected_conditional:Npnn.
 %       Then csname must contain ":".
 \cs_new_protected:Npn \iftcb@process@conditional #1#2#3
   {
     \tcbproc@readmdfive {#1} {#2}
-    \str_if_eq:ooTF { \tcbproclastmdfivesum } { \tcbprocmdfivesum }
+    \str_if_eq:NNTF \tcbproclastmdfivesum \tcbprocmdfivesum
       {
         \file_if_exist:nTF {#3}
           {
@@ -58,24 +64,27 @@
           { \use_i:nn }
       }
       {
-        \tcbproc@writemdfive{#2}
+        \tcbproc@writemdfive {#2}
         \use_i:nn
       }
   }
+
+\cs_new_protected:Npn \iftcb@process@off #1#2#3
+  {
+    \tcbproc@readmdfive {#1} {#2}
+    \str_if_eq:NNF \tcbproclastmdfivesum \tcbprocmdfivesum
+      { \tcbproc@writemdfive{#2} }
+    \use_ii:nn
+  }
+
+\cs_new_protected:Npn \tcbiffileprocess #1
+  {
+    \int_case:nn {#1}
+      {
+        {0} { \iftcb@process@on }
+        {1} { \iftcb@process@conditional }
+        {2} { \iftcb@process@off }
+      }
+  }
+
 \ExplSyntaxOff
-
-\newrobustcmd{\iftcb@process@off}[3]{%
-  \tcbproc@readmdfive{#1}{#2}%
-  \ifdefstrequal{\tcbproclastmdfivesum}{\tcbprocmdfivesum}{}{\tcbproc@writemdfive{#2}}%
-  \expandafter\@secondoftwo%
-}%
-
-\newrobustcmd{\tcbiffileprocess}[1]{%
-  \ifcase\numexpr#1\relax%
-    \expandafter\iftcb@process@on%
-  \or%
-    \expandafter\iftcb@process@conditional%
-  \else%
-    \expandafter\iftcb@process@off%
-  \fi%
-}
