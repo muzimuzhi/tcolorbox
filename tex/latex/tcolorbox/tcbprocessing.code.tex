@@ -21,39 +21,40 @@
 
 \ExplSyntaxOn
 
-\cs_new_protected:Npn \tcbproc@readmdfive #1#2
+\cs_new_protected:Npn \__tcbproc_read_mdfive:nn #1#2
   {
-    \tl_set:Ne \tcbproclastmdfivesum { \file_mdfive_hash:n {#1} }
+    \str_set:Ne \l__tcb_proc_last_hash_str { \file_mdfive_hash:n {#1} }
     \file_if_exist_input:nF {#2}
-      { \tl_set_eq:NN \tcbproclastmdfivesum \c_empty_tl }
+      { \str_clear:N \l__tcb_proc_last_hash_str }
   }
 
-\cs_new_protected:Npn \tcbproc@writemdfive #1
+\cs_new_protected:Npn \__tcbproc_write_mdfive:nn #1
 {
   \tcb@allocate@tcb@out
   \iow_open:Nn \tcb@out {#1}
   \iow_now:Ne \tcb@out
     {
-      \token_to_str:N \def \token_to_str:N \tcbproclastmdfivesum
-        { \tcbprocmdfivesum } \c_percent_str
+      \token_to_str:N \ExplSyntaxOn
+      \token_to_str:N \def \token_to_str:N \l__tcb_proc_last_hash_str
+        { \l__tcb_proc_curr_hash_str }
+      \token_to_str:N \ExplSyntaxOff
     }
   \iow_close:N \tcb@out
 }
 
-\cs_new_protected:Npn \iftcb@process@on #1#2#3
+\cs_new_protected:Npn \__tcbif_process_on:nnnTF #1#2#3
   {
-    \tcbproc@readmdfive {#1} {#2}
-    \str_if_eq:NNF \tcbproclastmdfivesum \tcbprocmdfivesum
-      { \tcbproc@writemdfive{#2} }
+    \__tcbproc_read_mdfive:nn {#1} {#2}
+    \str_if_eq:NNF \l__tcb_proc_last_hash_str \l__tcb_proc_curr_hash_str
+      { \__tcbproc_write_mdfive:nn{#2} }
     \use_i:ii
   }
 
-% TODO: define it by \prg_new_protected_conditional:Npnn.
-%       Then csname must contain ":".
-\cs_new_protected:Npn \iftcb@process@conditional #1#2#3
+% define it by \prg_new_protected_conditional:Npnn?
+\cs_new_protected:Npn \__tcbif_process_conditional:nnnTF #1#2#3
   {
-    \tcbproc@readmdfive {#1} {#2}
-    \str_if_eq:NNTF \tcbproclastmdfivesum \tcbprocmdfivesum
+    \__tcbproc_read_mdfive:nn {#1} {#2}
+    \str_if_eq:NNTF \l__tcb_proc_last_hash_str \l__tcb_proc_curr_hash_str
       {
         \file_if_exist:nTF {#3}
           {
@@ -64,27 +65,28 @@
           { \use_i:nn }
       }
       {
-        \tcbproc@writemdfive {#2}
+        \__tcbproc_write_mdfive:nn {#2}
         \use_i:nn
       }
   }
 
-\cs_new_protected:Npn \iftcb@process@off #1#2#3
+\cs_new_protected:Npn \__tcbif_process_off:nnnTF #1#2#3
   {
-    \tcbproc@readmdfive {#1} {#2}
-    \str_if_eq:NNF \tcbproclastmdfivesum \tcbprocmdfivesum
-      { \tcbproc@writemdfive{#2} }
+    \__tcbproc_read_mdfive:nn {#1} {#2}
+    \str_if_eq:NNF \l__tcb_proc_last_hash_str \l__tcb_proc_curr_hash_str
+      { \__tcbproc_write_mdfive:nn{#2} }
     \use_ii:nn
   }
 
-\cs_new_protected:Npn \tcbiffileprocess #1
+\cs_new_protected:Npn \__tcbif_file_process:nnnnTF #1
   {
     \int_case:nn {#1}
       {
-        {0} { \iftcb@process@on }
-        {1} { \iftcb@process@conditional }
-        {2} { \iftcb@process@off }
+        {0} { \__tcbif_process_on:nnnTF }
+        {1} { \__tcbif_process_conditional:nnnTF }
+        {2} { \__tcbif_process_off:nnnTF }
       }
   }
+\cs_gset_eq:NN \__tcbif_file_process:nnnTF \tcbiffileprocess
 
 \ExplSyntaxOff
