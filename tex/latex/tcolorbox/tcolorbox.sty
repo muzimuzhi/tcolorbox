@@ -2571,9 +2571,11 @@
 \ExplSyntaxOn
 \cs_new_protected:Npn \tcb@allocate@tcb@out
   {
-    % more latex3-nic name is \g_tcb_out_iow
-    \iow_new:N \tcb@out
-    \cs_gclear:N \tcb@allocate@tcb@out
+    % TODO: more latex3-nic name is \g_tcb_out_iow
+    % FIXME: why \iow_new:N caused "! Bad number (16)" error?
+    \newwrite \tcb@out
+    % FIXME: must be global? before \xdef\xxx{} was used
+    \cs_gset_eq:NN \tcb@allocate@tcb@out \prg_do_nothing:
   }
 \ExplSyntaxOff
 

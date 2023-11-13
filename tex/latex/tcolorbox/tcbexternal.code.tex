@@ -65,7 +65,7 @@
     \char_set_catcode_other:n { `\" }
     \iow_term:e { ===~Compile~external~'\tcbexternal@job@name':~ }
     \tcb@allocate@tcb@out
-    \iow_open:No \tcb@out { \tcbexternal@run@tex }
+    \iow_open:Nn \tcb@out { \tcbexternal@run@tex }
     \iow_now:Ne \tcb@out
       {
         \token_to_str:N \gdef \token_to_str:N \TCBEXTERNALINPUT
@@ -78,13 +78,13 @@
     \tl_if_empty:NF \tcbexternal@preclass
       { \iow_now:No \tcb@out { \tcbexternal@preclass } }
     \iow_now:No \tcb@out
-        { \token_to_str:N \input{"\jobname.tex"} }
+        { \token_to_str:N \input {"\jobname.tex"} }
     \iow_close:N \tcb@out
     \int_step_inline:nn { \tcbexternal@runs }
       {
         \sys_shell_now:e
           {
-            \tcbexternal@compiler~
+            \tcbexternal@compiler \c_space_tl
             -shell-escape~
             -halt-on-error~
             -interaction=batchmode~

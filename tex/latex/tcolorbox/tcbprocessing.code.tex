@@ -20,6 +20,8 @@
 \tcb@set@library@version{6.2.0pre2}
 
 \ExplSyntaxOn
+\str_new:N \l__tcb_proc_last_hash_str
+\str_new:N \l__tcb_proc_curr_hash_str
 
 \cs_new_protected:Npn \__tcbproc_read_mdfive:nn #1#2
   {
@@ -47,7 +49,7 @@
     \__tcbproc_read_mdfive:nn {#1} {#2}
     \str_if_eq:NNF \l__tcb_proc_last_hash_str \l__tcb_proc_curr_hash_str
       { \__tcbproc_write_mdfive:nn{#2} }
-    \use_i:ii
+    \use_i:nn
   }
 
 % define it by \prg_new_protected_conditional:Npnn?
@@ -59,8 +61,8 @@
         \file_if_exist:nTF {#3}
           {
             \str_if_eq:eeTF { \file_timestamp:n {#2} }{ \file_timestamp:n {#3} }
-              { \use_ii:ii }
-              { \use_i:ii }
+              { \use_ii:nn }
+              { \use_i:nn }
           }
           { \use_i:nn }
       }
@@ -87,6 +89,6 @@
         {2} { \__tcbif_process_off:nnnTF }
       }
   }
-\cs_gset_eq:NN \__tcbif_file_process:nnnTF \tcbiffileprocess
+\cs_gset_eq:NN \tcbiffileprocess \__tcbif_file_process:nnnnTF
 
 \ExplSyntaxOff
