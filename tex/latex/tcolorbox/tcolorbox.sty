@@ -2574,14 +2574,14 @@
 % This is because expl3 uses a pool of streams thus an iow stream is
 % initialized to \c_term_iow (16), and only allocated to a non-terminal
 % stream number when it's opened by \iow_open:Nn.
-% The benefit is, we can create \g__tcb_out_iow and \g__tcb_record_iow
+% The benefit is, we can create \g__tcobox_out_iow and \g__tcobox_record_iow
 % globally, with no fear of allocated multiple times.
-\iow_new:N \g__tcb_out_iow
+\iow_new:N \g__tcobox_out_iow
 
 % wrappers to be used in non-expl3 context
-\cs_new_protected:Npn \tcb@iow@open  { \iow_open:Nn \g__tcb_out_iow }
-\cs_new_protected:Npn \tcb@iow@write { \iow_now:Ne  \g__tcb_out_iow }
-\cs_new_protected:Npn \tcb@iow@close { \iow_close:N \g__tcb_out_iow }
+\cs_new_protected:Npn \tcb@iow@open  { \iow_open:Nn \g__tcobox_out_iow }
+\cs_new_protected:Npn \tcb@iow@write { \iow_now:Ne  \g__tcobox_out_iow }
+\cs_new_protected:Npn \tcb@iow@close { \iow_close:N \g__tcobox_out_iow }
 \ExplSyntaxOff
 
 \let\tcb@verbatim@begin@hook\@empty
@@ -2689,22 +2689,22 @@
 % recording
 
 \ExplSyntaxOn
-\iow_new:N \g__tcb_record_iow
+\iow_new:N \g__tcobox_record_iow
 
-\cs_new_protected:Npn \__tcb_record:n #1
-  { \iow_now:Ne \g__tcb_record_iow {#1} }
+\cs_new_protected:Npn \__tcobox_record:n #1
+  { \iow_now:Ne \g__tcobox_record_iow {#1} }
 
 \NewDocumentCommand \tcbstartrecording { O{\jobname.records} }
   {
-    \cs_set_eq:NN \tcbrecord \__tcb_record:n
+    \cs_set_eq:NN \tcbrecord \__tcobox_record:n
     % or str?
-    \tl_set:Ne \l__tcb_record_file_tl {#1}
-    \iow_open:Nn \g__tcb_record_iow {\l__tcb_record_file_tl}
+    \tl_set:Ne \l__tcobox_record_file_tl {#1}
+    \iow_open:Nn \g__tcobox_record_iow {\l__tcobox_record_file_tl}
   }
 
 \NewDocumentCommand \tcbstoprecording { }
   {
-    \iow_close:N \g__tcb_record_iow
+    \iow_close:N \g__tcobox_record_iow
     \cs_set_eq:NN \tcbrecord \use_none:n
   }
 
@@ -2714,7 +2714,7 @@
   no~recording
 }
 
-\NewDocumentCommand \tcbinputrecords { O{\l__tcb_record_file_tl} }
+\NewDocumentCommand \tcbinputrecords { O{\l__tcobox_record_file_tl} }
   {
     \file_if_exist_input:nF {#1}
       {

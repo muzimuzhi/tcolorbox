@@ -20,42 +20,43 @@
 \tcb@set@library@version{6.2.0pre2}
 
 \ExplSyntaxOn
-\str_new:N \l__tcb_proc_last_hash_str
-\str_new:N \l__tcb_proc_curr_hash_str
+\str_new:N \l__tcobox_proc_last_hash_str
+\str_new:N \l__tcobox_proc_curr_hash_str
 
-\cs_new_protected:Npn \__tcbproc_read_mdfive:nn #1#2
+\cs_new_protected:Npn \__tcobox_read_mdfive:nn #1#2
   {
-    \str_set:Ne \l__tcb_proc_last_hash_str { \file_mdfive_hash:n {#1} }
+    \str_set:Ne \l__tcobox_proc_last_hash_str { \file_mdfive_hash:n {#1} }
     \file_if_exist_input:nF {#2}
-      { \str_clear:N \l__tcb_proc_last_hash_str }
+      { \str_clear:N \l__tcobox_proc_last_hash_str }
   }
 
-\cs_new_protected:Npn \__tcbproc_write_mdfive:nn #1
+\cs_new_protected:Npn \__tcobox_write_mdfive:nn #1
   {
-    \iow_open:Nn \g__tcb_out_iow {#1}
-    \iow_now:Ne \g__tcb_out_iow
+    \iow_open:Nn \g__tcobox_out_iow {#1}
+    \iow_now:Ne \g__tcobox_out_iow
       {
+        % safe and worthy?
         \token_to_str:N \ExplSyntaxOn
-        \token_to_str:N \def \token_to_str:N \l__tcb_proc_last_hash_str
-          { \l__tcb_proc_curr_hash_str }
+        \token_to_str:N \def \token_to_str:N \l__tcobox_proc_last_hash_str
+          { \l__tcobox_proc_curr_hash_str }
         \token_to_str:N \ExplSyntaxOff
       }
-    \iow_close:N \g__tcb_out_iow
+    \iow_close:N \g__tcobox_out_iow
   }
 
-\cs_new_protected:Npn \__tcbif_process_on:nnnTF #1#2#3
+\cs_new_protected:Npn \__tcobox_if_process_on:nnnTF #1#2#3
   {
-    \__tcbproc_read_mdfive:nn {#1} {#2}
-    \str_if_eq:NNF \l__tcb_proc_last_hash_str \l__tcb_proc_curr_hash_str
-      { \__tcbproc_write_mdfive:nn{#2} }
+    \__tcobox_read_mdfive:nn {#1} {#2}
+    \str_if_eq:NNF \l__tcobox_proc_last_hash_str \l__tcobox_proc_curr_hash_str
+      { \__tcobox_write_mdfive:nn {#2} }
     \use_i:nn
   }
 
 % define it by \prg_new_protected_conditional:Npnn?
-\cs_new_protected:Npn \__tcbif_process_conditional:nnnTF #1#2#3
+\cs_new_protected:Npn \__tcobox_if_process_conditional:nnnTF #1#2#3
   {
-    \__tcbproc_read_mdfive:nn {#1} {#2}
-    \str_if_eq:NNTF \l__tcb_proc_last_hash_str \l__tcb_proc_curr_hash_str
+    \__tcobox_read_mdfive:nn {#1} {#2}
+    \str_if_eq:NNTF \l__tcobox_proc_last_hash_str \l__tcobox_proc_curr_hash_str
       {
         \file_if_exist:nTF {#3}
           {
@@ -66,28 +67,28 @@
           { \use_i:nn }
       }
       {
-        \__tcbproc_write_mdfive:nn {#2}
+        \__tcobox_write_mdfive:nn {#2}
         \use_i:nn
       }
   }
 
-\cs_new_protected:Npn \__tcbif_process_off:nnnTF #1#2#3
+\cs_new_protected:Npn \__tcobox_if_process_off:nnnTF #1#2#3
   {
-    \__tcbproc_read_mdfive:nn {#1} {#2}
-    \str_if_eq:NNF \l__tcb_proc_last_hash_str \l__tcb_proc_curr_hash_str
-      { \__tcbproc_write_mdfive:nn{#2} }
+    \__tcobox_read_mdfive:nn {#1} {#2}
+    \str_if_eq:NNF \l__tcobox_proc_last_hash_str \l__tcobox_proc_curr_hash_str
+      { \__tcobox_write_mdfive:nn {#2} }
     \use_ii:nn
   }
 
-\cs_new_protected:Npn \__tcbif_file_process:nnnnTF #1
+\cs_new_protected:Npn \__tcobox_if_file_process:nnnnTF #1
   {
     \int_case:nn {#1}
       {
-        {0} { \__tcbif_process_on:nnnTF }
-        {1} { \__tcbif_process_conditional:nnnTF }
-        {2} { \__tcbif_process_off:nnnTF }
+        {0} { \__tcobox_if_process_on:nnnTF }
+        {1} { \__tcobox_if_process_conditional:nnnTF }
+        {2} { \__tcobox_if_process_off:nnnTF }
       }
   }
-\cs_gset_eq:NN \tcbiffileprocess \__tcbif_file_process:nnnnTF
+\cs_gset_eq:NN \tcbiffileprocess \__tcobox_if_file_process:nnnnTF
 
 \ExplSyntaxOff

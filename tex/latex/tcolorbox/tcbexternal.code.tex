@@ -64,8 +64,8 @@
     \group_begin:
     \char_set_catcode_other:n { `\" }
     \iow_term:e { ===~Compile~external~'\tcbexternal@job@name':~ }
-    \iow_open:Nn \g__tcb_out_iow { \tcbexternal@run@tex }
-    \iow_now:Ne \g__tcb_out_iow
+    \iow_open:Nn \g__tcobox_out_iow { \tcbexternal@run@tex }
+    \iow_now:Ne \g__tcobox_out_iow
       {
         \token_to_str:N \gdef \token_to_str:N \TCBEXTERNALINPUT
           { "\tcbexternal@job@source" } \iow_newline:
@@ -75,10 +75,10 @@
           { \exp_not:o {\tcbexternal@preamble} }
       }
     \tl_if_empty:NF \tcbexternal@preclass
-      { \iow_now:No \g__tcb_out_iow { \tcbexternal@preclass } }
-    \iow_now:Ne \g__tcb_out_iow
+      { \iow_now:No \g__tcobox_out_iow { \tcbexternal@preclass } }
+    \iow_now:Ne \g__tcobox_out_iow
         { \token_to_str:N \input {"\jobname.tex"} }
-    \iow_close:N \g__tcb_out_iow
+    \iow_close:N \g__tcobox_out_iow
     \int_step_inline:nn { \tcbexternal@runs }
       {
         \sys_shell_now:e
